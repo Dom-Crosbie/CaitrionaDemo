@@ -1,0 +1,676 @@
+{
+  "openapi" : "3.0.3",
+  "info" : {
+    "title" : "CaitrionaDemo",
+    "description" : "RESTful API for searching train routes, pricing fares, and booking/managing train tickets.",
+    "version" : "1.0.0"
+  },
+  "servers" : [ {
+    "url" : "https://api.caitrionademo.example.com/v1"
+  } ],
+  "tags" : [ {
+    "name" : "Stations"
+  }, {
+    "name" : "Routes"
+  }, {
+    "name" : "Tickets"
+  }, {
+    "name" : "Health"
+  } ],
+  "paths" : {
+    "/health" : {
+      "get" : {
+        "tags" : [ "Health" ],
+        "summary" : "Health check",
+        "operationId" : "getHealth",
+        "responses" : {
+          "200" : {
+            "description" : "Service is healthy",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stations" : {
+      "get" : {
+        "tags" : [ "Stations" ],
+        "summary" : "List train stations",
+        "operationId" : "listStations",
+        "parameters" : [ {
+          "name" : "country",
+          "in" : "query",
+          "description" : "Filter stations by country code",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string",
+            "example" : "IE"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Stations returned",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/routes/search" : {
+      "get" : {
+        "tags" : [ "Routes" ],
+        "summary" : "Search available routes",
+        "operationId" : "searchRoutes",
+        "parameters" : [ {
+          "name" : "fromStationCode",
+          "in" : "query",
+          "required" : true,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string",
+            "example" : "DUB"
+          }
+        }, {
+          "name" : "toStationCode",
+          "in" : "query",
+          "required" : true,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string",
+            "example" : "CRK"
+          }
+        }, {
+          "name" : "departureDate",
+          "in" : "query",
+          "required" : true,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2026-10-01"
+          }
+        }, {
+          "name" : "passengers",
+          "in" : "query",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "minimum" : 1,
+            "type" : "integer",
+            "default" : 1
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Matching routes",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_2"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tickets/quote" : {
+      "post" : {
+        "tags" : [ "Tickets" ],
+        "summary" : "Get fare quote before booking",
+        "operationId" : "quoteTicket",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/TicketQuoteRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Fare quote calculated",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TicketQuoteResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tickets" : {
+      "get" : {
+        "tags" : [ "Tickets" ],
+        "summary" : "List tickets",
+        "operationId" : "listTickets",
+        "parameters" : [ {
+          "name" : "email",
+          "in" : "query",
+          "required" : false,
+          "style" : "form",
+          "explode" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "email",
+            "example" : "traveler@example.com"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Tickets returned",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_3"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Tickets" ],
+        "summary" : "Create a train ticket booking",
+        "operationId" : "createTicket",
+        "requestBody" : {
+          "content" : {
+            "text/plain" : {
+              "schema" : {
+                "type" : "string",
+                "description" : "Raw route ID",
+                "example" : "RTE-1001"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Ticket created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Ticket"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tickets/{ticketId}" : {
+      "get" : {
+        "tags" : [ "Tickets" ],
+        "summary" : "Get ticket by ID",
+        "operationId" : "getTicketById",
+        "parameters" : [ {
+          "name" : "ticketId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ticket returned",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Ticket"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Resource not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "Tickets" ],
+        "summary" : "Update seat or passenger details",
+        "operationId" : "updateTicket",
+        "parameters" : [ {
+          "name" : "ticketId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateTicketRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Ticket updated",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Ticket"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Resource not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tickets/{ticketId}/cancel" : {
+      "post" : {
+        "tags" : [ "Tickets" ],
+        "summary" : "Cancel ticket",
+        "operationId" : "cancelTicket",
+        "parameters" : [ {
+          "name" : "ticketId",
+          "in" : "path",
+          "required" : true,
+          "style" : "simple",
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "format" : "uuid"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ticket canceled",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_4"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Resource not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "Station" : {
+        "required" : [ "city", "code", "country", "name" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "example" : "DUB"
+          },
+          "name" : {
+            "type" : "string",
+            "example" : "Heuston Station"
+          },
+          "city" : {
+            "type" : "string",
+            "example" : "Dublin"
+          },
+          "country" : {
+            "type" : "string",
+            "example" : "IE"
+          }
+        }
+      },
+      "Route" : {
+        "required" : [ "arrivalTime", "departureTime", "durationMinutes", "fromStationCode", "routeId", "toStationCode" ],
+        "type" : "object",
+        "properties" : {
+          "routeId" : {
+            "type" : "string",
+            "example" : "RTE-1001"
+          },
+          "fromStationCode" : {
+            "type" : "string",
+            "example" : "DUB"
+          },
+          "toStationCode" : {
+            "type" : "string",
+            "example" : "CRK"
+          },
+          "departureTime" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "arrivalTime" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "durationMinutes" : {
+            "type" : "integer",
+            "example" : 165
+          }
+        }
+      },
+      "TicketQuoteRequest" : {
+        "required" : [ "passengers", "routeId", "seatClass", "travelDate" ],
+        "type" : "object",
+        "properties" : {
+          "routeId" : {
+            "type" : "string",
+            "example" : "RTE-1001"
+          },
+          "travelDate" : {
+            "type" : "string",
+            "format" : "date",
+            "example" : "2026-10-01"
+          },
+          "passengers" : {
+            "minimum" : 1,
+            "type" : "integer",
+            "example" : 2
+          },
+          "seatClass" : {
+            "type" : "string",
+            "example" : "standard",
+            "enum" : [ "standard", "first" ]
+          }
+        }
+      },
+      "TicketQuoteResponse" : {
+        "required" : [ "baseFare", "currency", "taxes", "totalFare" ],
+        "type" : "object",
+        "properties" : {
+          "currency" : {
+            "type" : "string",
+            "example" : "EUR"
+          },
+          "baseFare" : {
+            "type" : "number",
+            "format" : "float",
+            "example" : 49.99
+          },
+          "taxes" : {
+            "type" : "number",
+            "format" : "float",
+            "example" : 5.5
+          },
+          "totalFare" : {
+            "type" : "number",
+            "format" : "float",
+            "example" : 55.49
+          }
+        }
+      },
+      "Passenger" : {
+        "required" : [ "email", "fullName" ],
+        "type" : "object",
+        "properties" : {
+          "fullName" : {
+            "type" : "string",
+            "example" : "Caitriona Murphy"
+          },
+          "email" : {
+            "type" : "string",
+            "format" : "email",
+            "example" : "caitriona@example.com"
+          }
+        }
+      },
+      "CreateTicketRequest" : {
+        "required" : [ "passenger", "routeId", "seatClass", "travelDate" ],
+        "type" : "object",
+        "properties" : {
+          "routeId" : {
+            "type" : "string"
+          },
+          "travelDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "seatClass" : {
+            "type" : "string",
+            "enum" : [ "standard", "first" ]
+          },
+          "passenger" : {
+            "$ref" : "#/components/schemas/Passenger"
+          },
+          "seatPreference" : {
+            "type" : "string",
+            "default" : "no_preference",
+            "enum" : [ "window", "aisle", "no_preference" ]
+          }
+        }
+      },
+      "UpdateTicketRequest" : {
+        "type" : "object",
+        "properties" : {
+          "seatPreference" : {
+            "type" : "string",
+            "enum" : [ "window", "aisle", "no_preference" ]
+          },
+          "passenger" : {
+            "$ref" : "#/components/schemas/Passenger"
+          }
+        }
+      },
+      "Ticket" : {
+        "required" : [ "createdAt", "passenger", "routeId", "seatClass", "status", "ticketId", "travelDate" ],
+        "type" : "object",
+        "properties" : {
+          "ticketId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "routeId" : {
+            "type" : "string"
+          },
+          "travelDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "seatClass" : {
+            "type" : "string",
+            "enum" : [ "standard", "first" ]
+          },
+          "seatNumber" : {
+            "type" : "string",
+            "example" : "C12"
+          },
+          "status" : {
+            "type" : "string",
+            "enum" : [ "booked", "canceled" ]
+          },
+          "passenger" : {
+            "$ref" : "#/components/schemas/Passenger"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "Error" : {
+        "required" : [ "code", "message" ],
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "example" : "VALIDATION_ERROR"
+          },
+          "message" : {
+            "type" : "string",
+            "example" : "Invalid departureDate format"
+          },
+          "details" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "inline_response_200" : {
+        "required" : [ "status", "timestamp" ],
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "example" : "ok"
+          },
+          "timestamp" : {
+            "type" : "string",
+            "format" : "date-time",
+            "example" : "2026-09-22T15:00:00Z"
+          }
+        }
+      },
+      "inline_response_200_1" : {
+        "required" : [ "items" ],
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Station"
+            }
+          }
+        }
+      },
+      "inline_response_200_2" : {
+        "required" : [ "items" ],
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Route"
+            }
+          }
+        }
+      },
+      "inline_response_200_3" : {
+        "required" : [ "items" ],
+        "type" : "object",
+        "properties" : {
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Ticket"
+            }
+          }
+        }
+      },
+      "inline_response_200_4" : {
+        "required" : [ "canceledAt", "status", "ticketId" ],
+        "type" : "object",
+        "properties" : {
+          "ticketId" : {
+            "type" : "string",
+            "format" : "uuid"
+          },
+          "status" : {
+            "type" : "string",
+            "example" : "canceled"
+          },
+          "canceledAt" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      }
+    },
+    "responses" : {
+      "BadRequest" : {
+        "description" : "Invalid request",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound" : {
+        "description" : "Resource not found",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}
